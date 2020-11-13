@@ -1,8 +1,11 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
 package cmd
 
 import (
-	"fmt"
-
+	"github.com/gzuidhof/starboard-cli/starboard/internal/nbserver"
 	"github.com/spf13/cobra"
 )
 
@@ -12,7 +15,7 @@ var serveCmd = &cobra.Command{
 	Short: "Serves the notebook files in your current folder",
 	Long:  `Serve serves the notebook files in the current folder.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		fmt.Println("serve called")
+		nbserver.Start()
 	},
 }
 

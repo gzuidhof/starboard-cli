@@ -1,0 +1,48 @@
+/* This Source Code Form is subject to the terms of the Mozilla Public
+ * License, v. 2.0. If a copy of the MPL was not distributed with this
+ * file, You can obtain one at https://mozilla.org/MPL/2.0/. */
+
+package main
+
+import (
+	"log"
+	"os"
+	"path"
+
+	"github.com/gzuidhof/starboard-cli/starboard/internal/npm"
+)
+
+const defaultRuntimePackageName = "starboard-notebook"
+
+// Deletes the src and test folder in the output, saves some KB in executable size.
+func deleteUselessFiles(fromFolder string) {
+	// Delete src folder
+	err := os.RemoveAll(path.Join(fromFolder, "dist/src"))
+	if err != nil {
+		log.Fatalf("Failed to delete: %v", err)
+	}
+	err = os.RemoveAll(path.Join(fromFolder, "dist/test"))
+	if err != nil {
+		log.Fatalf("Failed to delete: %v", err)
+	}
+
+}
+
+func main() {
+	if len(os.Args) < 3 {
+		log.Print("Not enough arguments, supply 2 arguments: the version and output folder")
+		os.Exit(1)
+	}
+	version := os.Args[1]
+	outFolder := os.Args[2]
+
+	id, err := npm.DownloadPackageIntoFolder(defaultRuntimePackageName, version, outFolder)
+
+	packageFolder := path.Join(outFolder, id)
+	deleteUselessFiles(packageFolder)
+
+	if err != nil {
+		log.Fatalf("Failed to fetch %s: %v", defaultRuntimePackageName, err)
+	}
+	log.Printf("Downloaded %s into %s", id, outFolder)
+}
