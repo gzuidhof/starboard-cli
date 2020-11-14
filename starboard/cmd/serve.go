@@ -7,6 +7,7 @@ package cmd
 import (
 	"github.com/gzuidhof/starboard-cli/starboard/internal/nbserver"
 	"github.com/spf13/cobra"
+	"github.com/spf13/viper"
 )
 
 // serveCmd represents the serve command
@@ -30,5 +31,7 @@ func init() {
 
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
-	// serveCmd.Flags().BoolP("toggle", "t", false, "Help message for toggle")
+	serveCmd.Flags().StringP("port", "p", "8484", "Port to serve files on")
+
+	viper.BindPFlag("port", serveCmd.Flags().Lookup("port"))
 }

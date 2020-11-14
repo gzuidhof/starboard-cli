@@ -28,6 +28,14 @@ func deleteUselessFiles(fromFolder string) {
 
 }
 
+func dirExists(dirpath string) bool {
+	info, err := os.Stat(dirpath)
+	if os.IsNotExist(err) {
+		return false
+	}
+	return info.IsDir()
+}
+
 func main() {
 	if len(os.Args) < 3 {
 		log.Print("Not enough arguments, supply 2 arguments: the version and output folder")
@@ -36,6 +44,12 @@ func main() {
 	version := os.Args[1]
 	outFolder := os.Args[2]
 
+	if version != "latest" && dirExists(path.Join(outFolder, defaultRuntimePackageName+"@"+version)) {
+		log.Printf("Skipping NPM fetch of %s as version %v already seems to be vendored already", defaultRuntimePackageName, version)
+		os.Exit(0)
+	}
+
+	// id has the form <packagename>@<version>
 	id, err := npm.DownloadPackageIntoFolder(defaultRuntimePackageName, version, outFolder)
 
 	packageFolder := path.Join(outFolder, id)
