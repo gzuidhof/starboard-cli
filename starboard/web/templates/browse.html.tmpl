@@ -1,0 +1,21 @@
+<main style="min-height: 100vh">
+<r-grid columns="8" columns-s="4">
+
+  <r-cell span="2" span-s="row">
+    <h1>Starboard<br><span style="color: var(--serveBrandColor);">Serve</span></h1>
+    <p>
+      Serve is used to display and edit local <a href="https://github.com/gzuidhof/starboard-notebook">Starboard Notebook</a> files.
+    </p>
+  </r-cell>
+
+  <r-cell span="3-8" span-s="row">
+    <div style="display: flex; align-items: center; flex-wrap: wrap; margin-bottom: 0.6rem;">{{template "icon-folder"}} {{.path}}</div>
+    
+    <r-grid columns="2" class="compact">
+    {{if not (eq .path "/")}}
+      <r-cell span="row" ><a href="">..</a></r-cell>
+    {{end}}
+    </r-grid>
+  </r-cell>
+</r-grid>
+</main>

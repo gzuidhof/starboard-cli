@@ -1,0 +1,18 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <title>{{if .title}}{{.title}}{{else}}Starboard Serve{{end}}</title>
+    <meta name="viewport" content="width=device-width, initial-scale=1.00">
+    <link rel="icon" type="image/png" href="/static/images/favicon-32x32.png"/>
+
+    <link href="/static/css/raster2.css" rel="stylesheet">
+    <link href="/static/css/styles.css" rel="stylesheet">
+    {{ .head }}
+</head>
+<body>
+    {{ .body }}
+</body>
+</html>
+
+{{template "footer"}}

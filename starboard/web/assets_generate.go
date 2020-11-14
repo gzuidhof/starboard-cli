@@ -21,9 +21,9 @@ func main() {
 		log.Fatalln(err)
 	}
 
-	var templateFs http.FileSystem = http.Dir("web/template/")
-	os.MkdirAll("assets/web_template/", 0755)
-	err = vfsgen.Generate(templateFs, vfsgen.Options{Filename: "assets/web_template/vfsdata.go", VariableName: "TemplateAssets", PackageName: "web_template"})
+	var templateFs http.FileSystem = http.Dir("web/templates/")
+	os.MkdirAll("assets/web_templates/", 0755)
+	err = vfsgen.Generate(templateFs, vfsgen.Options{Filename: "assets/web_templates/vfsdata.go", VariableName: "TemplateAssets", PackageName: "web_templates"})
 	if err != nil {
 		log.Fatalln(err)
 	}

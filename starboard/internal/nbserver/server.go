@@ -5,34 +5,40 @@
 package nbserver
 
 import (
+	"bytes"
 	"html/template"
 	"log"
 	"net/http"
+	"path"
+	"strings"
 
-	"github.com/gzuidhof/starboard-cli/starboard/assets/web_static"
-	"github.com/gzuidhof/starboard-cli/starboard/assets/web_template"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
 	"github.com/shurcooL/httpgzip"
 	"github.com/spf13/viper"
 )
 
 var indexTemplate *template.Template
+var browseTemplate *template.Template
+var fs serveFS
 
-func initTemplates() {
-	t, err := vfstemplate.ParseGlob(web_template.TemplateAssets, nil, "*.tmpl")
+func loadTemplates(fs http.FileSystem) {
+
+	t, err := vfstemplate.ParseGlob(fs, nil, "*.tmpl")
 	if err != nil {
 		log.Fatalf("Failed to parse templates in vfs: %v", err)
 	}
 	indexTemplate = t.Lookup("index.html.tmpl")
+	browseTemplate = t.Lookup("browse.html.tmpl")
 }
 
 func Start() {
-	initTemplates()
+	fs = getFileSystems()
+	loadTemplates(fs.templates)
 
-	fs := httpgzip.FileServer(web_static.StaticAssets, httpgzip.FileServerOptions{})
-	http.Handle("/static/", http.StripPrefix("/static/", fs))
+	fileServer := httpgzip.FileServer(fs.static, httpgzip.FileServerOptions{})
+	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
-	http.HandleFunc("/", handleHome)
+	http.HandleFunc("/", handleBrowse)
 
 	port := viper.GetString("port")
 	done := make(chan bool)
@@ -44,10 +50,24 @@ func Start() {
 	<-done
 }
 
-func handleHome(w http.ResponseWriter, r *http.Request) {
+func handleBrowse(w http.ResponseWriter, r *http.Request) {
+	loadTemplates(fs.templates) // TODO: Only do this in dev mode
 	w.Header().Set("Content-Type", "text/html")
 
-	err := indexTemplate.Execute(w, 1)
+	browsePath := path.Clean(r.URL.Path)
+	browsePath = strings.TrimPrefix(browsePath, "/tree")
+
+	var b bytes.Buffer
+	err := browseTemplate.Execute(&b, map[string]interface{}{
+		"path": browsePath,
+	})
+	if err != nil {
+		http.Error(w, err.Error(), http.StatusInternalServerError)
+	}
+
+	err = indexTemplate.Execute(w, map[string]interface{}{
+		"body": template.HTML(b.String()),
+	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
 	}
