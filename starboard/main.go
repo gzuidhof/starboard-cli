@@ -5,6 +5,7 @@
 package main
 
 //go:generate go run web/assets_generate.go
+//go:generate go run scripts/download_runtime/main.go 0.6.4 web/static/vendor/
 
 import (
 	"github.com/gzuidhof/starboard-cli/starboard/cmd"
