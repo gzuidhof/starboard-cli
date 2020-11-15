@@ -34,6 +34,8 @@ func init() {
 	serveCmd.Flags().StringP("port", "p", "8585", "Port to serve files on")
 	serveCmd.Flags().String("port_secondary", "15742", "Port used as secondary origin (for additional sandboxing)")
 
+	serveCmd.Flags().StringP("folder", "f", ".", "Folder (or file) to serve, defaults to the current working directory")
+
 	serveCmd.Flags().String("static_folder", "", "Override where static assets are served from, it uses the embedded assets if not set")
 	serveCmd.Flags().String("templates_folder", "", "Override where templates are loaded from, it uses the embedded assets if not set")
 
@@ -42,4 +44,6 @@ func init() {
 
 	viper.BindPFlag("static_folder", serveCmd.Flags().Lookup("static_folder"))
 	viper.BindPFlag("templates_folder", serveCmd.Flags().Lookup("templates_folder"))
+
+	viper.BindPFlag("serve.folder", serveCmd.Flags().Lookup("folder"))
 }

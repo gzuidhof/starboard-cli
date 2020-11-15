@@ -12,3 +12,7 @@
     --fontSize: 16px;
     --serveBrandColor: #3a59b7;
 }
+
+.breadcrumb-delimiter {
+    margin: 0 0.4rem;
+}

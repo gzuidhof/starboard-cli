@@ -5,12 +5,9 @@
 package nbserver
 
 import (
-	"bytes"
 	"html/template"
 	"log"
 	"net/http"
-	"path"
-	"strings"
 
 	"github.com/shurcooL/httpfs/html/vfstemplate"
 	"github.com/shurcooL/httpgzip"
@@ -36,9 +33,13 @@ func Start() {
 	loadTemplates(fs.templates)
 
 	fileServer := httpgzip.FileServer(fs.static, httpgzip.FileServerOptions{})
+	browseHandler := &browseHandler{http.Dir(viper.GetString("serve.folder"))}
+
 	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
-	http.HandleFunc("/", handleBrowse)
+	// /browse/
+	http.Handle(defaultBrowseEndpoint, browseHandler) // Works for both / and /browse/
+	http.Handle("/", http.RedirectHandler("/browse", http.StatusFound))
 
 	port := viper.GetString("port")
 	done := make(chan bool)
@@ -48,27 +49,4 @@ func Start() {
 	log.Printf("Listening on port %v", port)
 
 	<-done
-}
-
-func handleBrowse(w http.ResponseWriter, r *http.Request) {
-	loadTemplates(fs.templates) // TODO: Only do this in dev mode
-	w.Header().Set("Content-Type", "text/html")
-
-	browsePath := path.Clean(r.URL.Path)
-	browsePath = strings.TrimPrefix(browsePath, "/tree")
-
-	var b bytes.Buffer
-	err := browseTemplate.Execute(&b, map[string]interface{}{
-		"path": browsePath,
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
-
-	err = indexTemplate.Execute(w, map[string]interface{}{
-		"body": template.HTML(b.String()),
-	})
-	if err != nil {
-		http.Error(w, err.Error(), http.StatusInternalServerError)
-	}
 }
