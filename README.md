@@ -1,7 +1,4 @@
-<p align="center">
-<img width="300px" src="./starboard/assets/images/starboard-cli-header.png">
-</p>
-
+starboard-cli
 ---
 
 Command line tool for interacting with [Starboard Notebooks](https://github.com/gzuidhof/starboard-notebook) locally. It starts a local webserver so you can view and edit notebook files on your computer.
