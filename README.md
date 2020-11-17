@@ -3,7 +3,7 @@ starboard-cli
 
 Command line tool for interacting with [Starboard Notebooks](https://github.com/gzuidhof/starboard-notebook) locally. It starts a local webserver so you can view and edit notebook files on your computer.
 
-It's not yet ready for general use.
+It's not ready for general use.
 
 ## Screenshots
 
