@@ -5,6 +5,8 @@
 package cmd
 
 import (
+	"log"
+
 	"github.com/gzuidhof/starboard-cli/starboard/internal/nbserver"
 	"github.com/spf13/cobra"
 	"github.com/spf13/viper"
@@ -16,7 +18,11 @@ var serveCmd = &cobra.Command{
 	Short: "Serves the notebook files in your current folder",
 	Long:  `Serve serves the notebook files in the current folder.`,
 	Run: func(cmd *cobra.Command, args []string) {
-		nbserver.Start()
+		if len(args) < 1 {
+			log.Fatal("The serve path argument is required")
+		}
+
+		nbserver.Start(args[0])
 	},
 }
 
@@ -34,8 +40,6 @@ func init() {
 	serveCmd.Flags().StringP("port", "p", "8585", "Port to serve files on")
 	serveCmd.Flags().String("port_secondary", "15742", "Port used as secondary origin (for additional sandboxing)")
 
-	serveCmd.Flags().StringP("folder", "f", ".", "Folder (or file) to serve, defaults to the current working directory")
-
 	serveCmd.Flags().String("static_folder", "", "Override where static assets are served from, it uses the embedded assets if not set")
 	serveCmd.Flags().String("templates_folder", "", "Override where templates are loaded from, it uses the embedded assets if not set")
 
@@ -44,6 +48,4 @@ func init() {
 
 	viper.BindPFlag("static_folder", serveCmd.Flags().Lookup("static_folder"))
 	viper.BindPFlag("templates_folder", serveCmd.Flags().Lookup("templates_folder"))
-
-	viper.BindPFlag("serve.folder", serveCmd.Flags().Lookup("folder"))
 }

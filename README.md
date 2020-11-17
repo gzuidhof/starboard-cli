@@ -13,10 +13,10 @@ Pre-built binaries and a NPM distribution will be available later.
 ## Usage
 ```bash
 # Serve files in current folder
-starboard serve
+starboard serve .
 
 ## Serve files under a certain path
-starboard serve -f "./assets"
+starboard serve ./assets
 ```
 
 ## Screenshots

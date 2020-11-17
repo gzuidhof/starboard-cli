@@ -32,10 +32,10 @@ func loadTemplates(fs http.FileSystem) {
 	editorTemplate = t.Lookup("editor.html.tmpl")
 }
 
-func Start() {
+func Start(servePath string) {
 	port := viper.GetString("port")
 	portSecondary := viper.GetString("port_secondary")
-	serveFolder := viper.GetString("serve.folder")
+	serveFolder := servePath
 
 	serveFolderAbs, err := filepath.Abs(serveFolder)
 
