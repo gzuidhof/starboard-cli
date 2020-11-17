@@ -1,0 +1,107 @@
+<main style="min-height: 100vh">
+    <r-grid columns="8">
+        <r-cell span="3-8" span-s="row">
+        <!-- Breadcrumbs -->
+            <div style="display: flex; align-items: center; flex-wrap: wrap; margin-bottom: 1.2rem;">
+                <a style="display:flex" href="{{$.browseEndpoint}}">{{template "icon-folder"}}</a> <span class="breadcrumb-delimiter">/</span>
+                {{range .breadCrumbs}}
+                    <a
+                    href="{{if .IsNotebook }}{{$.notebookEndpoint}}{{else}}{{$.browseEndpoint}}{{end}}{{.Path}}"
+                    >{{.Name}}</a> {{if .IsFolder}}<span class="breadcrumb-delimiter">/</span>{{end}}
+                {{end}}
+                <span id="dirty-indicator" style="color: #666; font-size: 0.7em; margin-left: 1em"></span>
+            </div>
+        </r-cell>
+    </r-grid>
+    <iframe
+        title="Starboard Notebook Sandbox iFrame"
+        id="notebook-iframe"
+        class="full-page-width"
+        src="{{.iframeHost}}/static/vendor/starboard-notebook@0.7.1/dist/index.html"
+        sandbox="allow-scripts allow-modals allow-same-origin allow-pointer-lock allow-top-navigation-by-user-activation allow-forms allow-downloads"
+        frameborder="0"
+    ></iframe>
+    <hr style="margin-bottom: 0;">
+    <details>
+        <summary><span style="font-weight: 700; font-size: 0.8em; color: #333" >Current notebook content</span></summary>
+        <pre id="notebook-content-display" style="background-color: #eee; padding: 1em;"></pre>
+    </details>
+</main>
+
+{{template "footer"}}
+
+<script src="/static/vendor/iframe-resizer@4.2.11/js/iframeResizer.min.js"></script>
+<script type="module">
+    const initialNotebookContent = {{.notebookContent}};
+
+    let currentNotebookContent;
+    let lastSavedNotebookContentString = initialNotebookContent;
+    let dirtyIndicator = document.querySelector("#dirty-indicator");
+    let contentDisplay = document.querySelector("#notebook-content-display");
+
+    function updateContent(content) {
+        currentNotebookContent = content;
+        contentDisplay.innerText = currentNotebookContent;
+        const isDirty = lastSavedNotebookContentString != currentNotebookContent;
+        updateDirtyIndicators(isDirty);
+    }
+    updateContent(initialNotebookContent);
+
+    function updateDirtyIndicators(dirty) {
+
+        if (dirty && !document.title.startsWith("* ")) {
+            document.title = "* " + document.title;
+            dirtyIndicator.innerText = " Unsaved changes";
+        } else if (!dirty && document.title.startsWith("* ")) {
+            document.title = document.title.substr(2);
+            dirtyIndicator.innerText = "";
+        }
+    }  
+
+    async function save(content) {
+        const r = await fetch(window.location.pathname, {
+            method: "PUT",
+            body: content,
+            headers: {
+                'Content-Type': 'text/plain; charset=UTF-8',
+            },
+        });
+        if (!r.ok) {
+            alert("Failed to save, open your console");
+            return;
+        }
+        lastSavedNotebookContentString = content;
+        updateDirtyIndicators(false);
+    }
+
+    window.iFrameComponent = window.iFrameResize({ // Check the iframeResizer docs&code for the options here
+        autoResize: true, 
+        checkOrigin: [
+        "{{.iframeHost}}",
+        ],
+        onMessage: (messageData) => {
+            // This message is sent when the notebook is ready
+            // Respond to this message with the initial content of the notebook.
+            //
+            // The iFrame will send this message multiple times until you set the content.
+            // Note that you don't have to reply synchronously: you can wait for the content to be loaded from say a remote server
+            if (messageData.message.type === "SIGNAL_READY") {
+                window.iFrameComponent[0].iFrameResizer.sendMessage({
+                    type: "SET_NOTEBOOK_CONTENT", data: initialNotebookContent
+                })
+
+            // Whenever the notebook content gets changed (e.g. a character is typed)
+            // the entire content is sent to the parent website.
+            } else if (messageData.message.type === "NOTEBOOK_CONTENT_UPDATE") {
+                updateContent(messageData.message.data);
+
+            // This signal is sent when a save shortcut (e.g. cmd+s on mac) is pressed.
+            } else if (messageData.message.type === "SAVE") {
+                updateContent(messageData.message.data);
+                save(messageData.message.data); // Implement your own save function..
+            }
+        },
+        onReady: () => {},
+        inPageLinks: true,
+    }, document.querySelector("#notebook-iframe"));
+</script>

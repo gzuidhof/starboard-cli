@@ -13,8 +13,9 @@ type BreadCrumb struct {
 	/**
 	* Path without leading "/"
 	 */
-	Path     string
-	IsFolder bool
+	Path       string
+	IsFolder   bool
+	IsNotebook bool
 }
 
 func makeBreadCrumbs(path string, lastIsFolder bool) []BreadCrumb {
@@ -31,6 +32,11 @@ func makeBreadCrumbs(path string, lastIsFolder bool) []BreadCrumb {
 			Name:     parts[i],
 			IsFolder: i < len(parts)-1 || lastIsFolder,
 			Path:     strings.Join(parts[:i+1], "/"),
+		}
+
+		if i == len(parts)-1 && !lastIsFolder {
+			bc[i].IsNotebook = isProbablyNotebookFilename(parts[i])
+			bc[i].Path = strings.Replace(bc[i].Path, defaultBrowseEndpoint, defaultNotebookEndpoint, 1)
 		}
 	}
 

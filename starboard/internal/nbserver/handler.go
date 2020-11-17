@@ -8,14 +8,17 @@ import (
 	"html/template"
 	"log"
 	"net/http"
+	"path/filepath"
 
 	"github.com/shurcooL/httpfs/html/vfstemplate"
 	"github.com/shurcooL/httpgzip"
+	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 )
 
 var indexTemplate *template.Template
 var browseTemplate *template.Template
+var editorTemplate *template.Template
 var fs serveFS
 
 func loadTemplates(fs http.FileSystem) {
@@ -26,22 +29,46 @@ func loadTemplates(fs http.FileSystem) {
 	}
 	indexTemplate = t.Lookup("index.html.tmpl")
 	browseTemplate = t.Lookup("browse.html.tmpl")
+	editorTemplate = t.Lookup("editor.html.tmpl")
 }
 
 func Start() {
+	port := viper.GetString("port")
+	serveFolder := viper.GetString("serve.folder")
+
+	serveFolder, err := filepath.Abs(serveFolder)
+
+	if err != nil {
+		log.Fatalf("Invalid serve folder, could not get absolute path: %v", err)
+	}
+
 	fs = getFileSystems()
 	loadTemplates(fs.templates)
 
 	fileServer := httpgzip.FileServer(fs.static, httpgzip.FileServerOptions{})
-	browseHandler := &browseHandler{http.Dir(viper.GetString("serve.folder"))}
+	browseHandler := &browseHandler{
+		root: http.Dir(serveFolder),
+	}
+
+	writeFileSystem := afero.NewBasePathFs(afero.NewOsFs(), serveFolder).(*afero.BasePathFs)
+	nbHandler := &notebookHandler{
+		root:        http.Dir(serveFolder),
+		iframeHost:  "http://localhost:" + port,
+		writeFS:     writeFileSystem,
+		serveFolder: serveFolder,
+	}
 
 	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
 
 	// /browse/
-	http.Handle(defaultBrowseEndpoint, browseHandler) // Works for both / and /browse/
+	http.Handle(defaultBrowseEndpoint, browseHandler)
+
+	// /nb/
+	http.Handle(defaultNotebookEndpoint, nbHandler) // Works for both / and /browse/
+
+	//
 	http.Handle("/", http.RedirectHandler("/browse", http.StatusFound))
 
-	port := viper.GetString("port")
 	done := make(chan bool)
 	go func() {
 		log.Fatal(http.ListenAndServe(":"+port, nil))

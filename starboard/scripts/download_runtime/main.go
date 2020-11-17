@@ -13,19 +13,16 @@ import (
 )
 
 const defaultRuntimePackageName = "starboard-notebook"
+const defaultIframeResizerPackageName = "iframe-resizer"
 
 // Deletes the src and test folder in the output, saves some KB in executable size.
-func deleteUselessFiles(fromFolder string) {
-	// Delete src folder
-	err := os.RemoveAll(path.Join(fromFolder, "dist/src"))
-	if err != nil {
-		log.Fatalf("Failed to delete: %v", err)
+func deleteUselessFiles(fromFolder string, toRemove []string) {
+	for _, folder := range toRemove {
+		err := os.RemoveAll(path.Join(fromFolder, folder))
+		if err != nil {
+			log.Fatalf("Failed to delete: %v", err)
+		}
 	}
-	err = os.RemoveAll(path.Join(fromFolder, "dist/test"))
-	if err != nil {
-		log.Fatalf("Failed to delete: %v", err)
-	}
-
 }
 
 func dirExists(dirpath string) bool {
@@ -37,26 +34,42 @@ func dirExists(dirpath string) bool {
 }
 
 func main() {
-	if len(os.Args) < 3 {
-		log.Print("Not enough arguments, supply 2 arguments: the version and output folder")
+	if len(os.Args) < 4 {
+		log.Print("Not enough arguments, supply 3 arguments: the package name, version and output folder")
 		os.Exit(1)
 	}
-	version := os.Args[1]
-	outFolder := os.Args[2]
+	packageName := os.Args[1]
+	version := os.Args[2]
+	outFolder := os.Args[3]
 
-	if version != "latest" && dirExists(path.Join(outFolder, defaultRuntimePackageName+"@"+version)) {
-		log.Printf("Skipping NPM fetch of %s as version %v already seems to be vendored already", defaultRuntimePackageName, version)
+	if version != "latest" && dirExists(path.Join(outFolder, packageName+"@"+version)) {
+		log.Printf("Skipping NPM fetch of %s as version %v already seems to be vendored already", packageName, version)
 		os.Exit(0)
 	}
 
 	// id has the form <packagename>@<version>
-	id, err := npm.DownloadPackageIntoFolder(defaultRuntimePackageName, version, outFolder)
-
+	id, err := npm.DownloadPackageIntoFolder(packageName, version, outFolder)
 	packageFolder := path.Join(outFolder, id)
-	deleteUselessFiles(packageFolder)
+
+	if packageName == defaultRuntimePackageName {
+		deleteUselessFiles(packageFolder, []string{"dist/src", "dist/test"})
+	} else if packageName == defaultIframeResizerPackageName {
+		// Possible improvement: create a "keep-these-files" function.. we really only need one file
+		deleteUselessFiles(packageFolder, []string{
+			".github",
+			"CHANGELOG.md", // Some large markdown files we really don't have to statically bundle
+			"CONTRIBUTING.md",
+			"README.md",
+			"js/iframeResizer.js", // We use the minified version instead
+			"js/iframeResizer.contentWindow.js",
+			"js/iframeResizer.contentWindow.map",
+			"js/iframeResizer.contentWindow.min.js",
+			"js/index.js",
+		})
+	}
 
 	if err != nil {
-		log.Fatalf("Failed to fetch %s: %v", defaultRuntimePackageName, err)
+		log.Fatalf("Failed to fetch %s: %v", packageName, err)
 	}
 	log.Printf("Downloaded %s into %s", id, outFolder)
 }

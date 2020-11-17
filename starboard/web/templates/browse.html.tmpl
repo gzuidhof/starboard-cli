@@ -3,11 +3,14 @@
 
   {{template "header"}}
   <r-cell span="3-8" span-s="row">
+    <!-- Breadcrumbs -->
     <div style="display: flex; align-items: center; flex-wrap: wrap; margin-bottom: 1.2rem;">
-    <a style="display:flex" href="{{$.browseEndpoint}}">{{template "icon-folder"}}</a> <span class="breadcrumb-delimiter">/</span>
-    {{range .breadCrumbs}}
-      <a href="{{$.browseEndpoint}}{{.Path}}">{{.Name}}</a> {{if .IsFolder}}<span class="breadcrumb-delimiter">/</span>{{end}}
-    {{end}}
+      <a style="display:flex" href="{{$.browseEndpoint}}">{{template "icon-folder"}}</a> <span class="breadcrumb-delimiter">/</span>
+      {{range .breadCrumbs}}
+        <a
+          href="{{if .IsNotebook }}{{$.notebookEndpoint}}{{else}}{{$.browseEndpoint}}{{end}}{{.Path}}"
+        >{{.Name}}</a> {{if .IsFolder}}<span class="breadcrumb-delimiter">/</span>{{end}}
+      {{end}}
     </div>
     
     <r-grid columns="2" class="compact" style="font-family: monospace">

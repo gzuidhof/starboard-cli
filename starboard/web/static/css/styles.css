@@ -1,12 +1,10 @@
 @charset "utf-8";
-
 @font-face {
     font-family: "Inter var";
     font-weight: 200 900;
     font-display: swap;
     src: local("Inter var"), url("/static/fonts/inter.var.woff2?v=3.15") format("woff2");
 }
-
 
 :root {
     --fontSize: 16px;
@@ -15,4 +13,9 @@
 
 .breadcrumb-delimiter {
     margin: 0 0.4rem;
+}
+
+.full-page-width {
+    width: 100vw;
+    transform: translateX(calc( -2 * var(--lineHeight)));
 }

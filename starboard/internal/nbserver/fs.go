@@ -6,6 +6,7 @@ package nbserver
 
 import (
 	"net/http"
+	"strings"
 
 	"github.com/gzuidhof/starboard-cli/starboard/assets/web_static"
 	"github.com/gzuidhof/starboard-cli/starboard/assets/web_templates"
@@ -17,13 +18,11 @@ const dev = true
 type serveFS struct {
 	static    http.FileSystem
 	templates http.FileSystem
-	serve     http.FileSystem
 }
 
 func getFileSystems() serveFS {
 	var static http.FileSystem
 	var templates http.FileSystem
-	serve := http.Dir(".")
 
 	if viper.GetString("static_folder") != "" {
 		static = http.Dir(viper.GetString("static_folder"))
@@ -40,6 +39,9 @@ func getFileSystems() serveFS {
 	return serveFS{
 		static:    static,
 		templates: templates,
-		serve:     serve,
 	}
+}
+
+func isProbablyNotebookFilename(name string) bool {
+	return strings.HasSuffix(name, ".nb") || strings.HasSuffix(name, ".sb") || strings.HasSuffix(name, ".sbnb")
 }

@@ -35,6 +35,7 @@ type browseHandler struct {
 type BrowseEntry struct {
 	Name         string
 	URL          string
+	IsNotebook   bool
 	LastModified string
 }
 
@@ -151,11 +152,16 @@ func dirList(w http.ResponseWriter, r *http.Request, f http.File) {
 		if d.IsDir() {
 			name += "/"
 		}
-		url := url.URL{Path: name}
+		isNotebook := isProbablyNotebookFilename(name)
+		URL := url.URL{Path: name}
+		if isNotebook {
+			URL = url.URL{Path: path.Join(defaultNotebookEndpoint, r.URL.Path, name)}
+		}
 
 		entries[i] = BrowseEntry{
 			Name:         htmlReplacer.Replace(name),
-			URL:          url.String(),
+			URL:          URL.String(),
+			IsNotebook:   isNotebook,
 			LastModified: d.ModTime().String(),
 		}
 	}
@@ -163,10 +169,11 @@ func dirList(w http.ResponseWriter, r *http.Request, f http.File) {
 
 	var b bytes.Buffer
 	err = browseTemplate.Execute(&b, map[string]interface{}{
-		"browseEndpoint": defaultBrowseEndpoint,
-		"path":           r.URL.Path,
-		"breadCrumbs":    crumbs,
-		"entries":        entries,
+		"browseEndpoint":   defaultBrowseEndpoint,
+		"notebookEndpoint": defaultNotebookEndpoint,
+		"path":             r.URL.Path,
+		"breadCrumbs":      crumbs,
+		"entries":          entries,
 	})
 	if err != nil {
 		http.Error(w, err.Error(), http.StatusInternalServerError)
