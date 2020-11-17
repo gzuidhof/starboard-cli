@@ -34,6 +34,7 @@ func loadTemplates(fs http.FileSystem) {
 
 func Start() {
 	port := viper.GetString("port")
+	portSecondary := viper.GetString("port_secondary")
 	serveFolder := viper.GetString("serve.folder")
 
 	serveFolderAbs, err := filepath.Abs(serveFolder)
@@ -53,7 +54,7 @@ func Start() {
 	writeFileSystem := afero.NewBasePathFs(afero.NewOsFs(), serveFolderAbs).(*afero.BasePathFs)
 	nbHandler := &notebookHandler{
 		root:        http.Dir(serveFolderAbs),
-		iframeHost:  "http://localhost:" + port,
+		iframeHost:  "http://localhost:" + portSecondary,
 		writeFS:     writeFileSystem,
 		serveFolder: serveFolderAbs,
 	}
@@ -79,7 +80,10 @@ func Start() {
 	go func() {
 		log.Fatal(http.ListenAndServe(":"+port, nil))
 	}()
-	log.Printf("Listening on port %v", port)
+	go func() {
+		log.Fatal(http.ListenAndServe(":"+portSecondary, nil))
+	}()
+	log.Printf("Listening on port %v (and %s for sandboxing)", port, portSecondary)
 
 	<-done
 }
