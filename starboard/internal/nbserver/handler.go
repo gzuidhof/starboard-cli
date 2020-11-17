@@ -66,8 +66,12 @@ func Start() {
 	// /nb/
 	http.Handle(defaultNotebookEndpoint, nbHandler) // Works for both / and /browse/
 
+	if isProbablyNotebookFilename(serveFolder) {
+		http.Handle("/", http.RedirectHandler("/nb/", http.StatusFound))
+	} else {
+		http.Handle("/", http.RedirectHandler("/browse/", http.StatusFound))
+	}
 	//
-	http.Handle("/", http.RedirectHandler("/browse", http.StatusFound))
 
 	done := make(chan bool)
 	go func() {

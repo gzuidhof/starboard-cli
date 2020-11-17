@@ -30,10 +30,10 @@ func (h *notebookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	if r.Method == http.MethodGet {
 		upath := strings.TrimPrefix(r.URL.Path, defaultNotebookEndpoint)
 
-		if !strings.HasPrefix(upath, "/") {
-			upath = "/" + upath
-			r.URL.Path = upath
-		}
+		// if !strings.HasPrefix(upath, "/") {
+		// 	upath = "/" + upath
+		// 	r.URL.Path = upath
+		// }
 
 		upath = path.Clean(upath)
 		h.serveNotebook(w, r, h.root, upath)
@@ -84,7 +84,7 @@ func (h *notebookHandler) serveNotebook(w http.ResponseWriter, r *http.Request, 
 			return
 		}
 
-		localRedirect(w, r, path.Join(defaultNotebookEndpoint, url))
+		localRedirect(w, r, path.Join(defaultBrowseEndpoint, url))
 		return
 	}
 
