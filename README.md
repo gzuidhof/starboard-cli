@@ -25,7 +25,7 @@ starboard serve -f "./assets"
 ![Starboard Serve Screenshot](https://i.imgur.com/6k8VDz8.png)
 
 ### `starboard serve` notebook view/editor
-![Starboard Server Notebook View Screenshot](https://i.imgur.com/mGQ35mc.png)
+![Starboard Server Notebook View Screenshot](https://i.imgur.com/gy2Iuyl.png)
 
 ## License
 This is free software; you can redistribute it and/or modify it under the terms of the [Mozilla Public License Version 2.0](./LICENSE).
