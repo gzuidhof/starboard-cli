@@ -1,12 +1,14 @@
 starboard-cli
 ---
 
-Command line tool for interacting with [Starboard Notebooks](https://github.com/gzuidhof/starboard-notebook) locally. It starts a local webserver so you can view and edit notebook files on your computer.
+This repo contains the code for the `starboard` command line tool, it is used for interacting with [Starboard Notebooks](https://github.com/gzuidhof/starboard-notebook) locally. It starts a local webserver so you can view and edit notebook files on your computer.
 
 ## Installation
 ```
-go get https://github.com/gzuidhof/starboard-cli/starboard
+go get github.com/gzuidhof/starboard-cli/starboard
 ```
+
+Pre-built binaries and a NPM distribution will be available later.
 
 ## Usage
 ```
