@@ -36,7 +36,7 @@ func Start() {
 	port := viper.GetString("port")
 	serveFolder := viper.GetString("serve.folder")
 
-	serveFolder, err := filepath.Abs(serveFolder)
+	serveFolderAbs, err := filepath.Abs(serveFolder)
 
 	if err != nil {
 		log.Fatalf("Invalid serve folder, could not get absolute path: %v", err)
@@ -47,15 +47,15 @@ func Start() {
 
 	fileServer := httpgzip.FileServer(fs.static, httpgzip.FileServerOptions{})
 	browseHandler := &browseHandler{
-		root: http.Dir(serveFolder),
+		root: http.Dir(serveFolderAbs),
 	}
 
-	writeFileSystem := afero.NewBasePathFs(afero.NewOsFs(), serveFolder).(*afero.BasePathFs)
+	writeFileSystem := afero.NewBasePathFs(afero.NewOsFs(), serveFolderAbs).(*afero.BasePathFs)
 	nbHandler := &notebookHandler{
-		root:        http.Dir(serveFolder),
+		root:        http.Dir(serveFolderAbs),
 		iframeHost:  "http://localhost:" + port,
 		writeFS:     writeFileSystem,
-		serveFolder: serveFolder,
+		serveFolder: serveFolderAbs,
 	}
 
 	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
@@ -67,8 +67,10 @@ func Start() {
 	http.Handle(defaultNotebookEndpoint, nbHandler) // Works for both / and /browse/
 
 	if isProbablyNotebookFilename(serveFolder) {
+		log.Printf("Serving notebook file %s", serveFolder)
 		http.Handle("/", http.RedirectHandler("/nb/", http.StatusFound))
 	} else {
+		log.Printf("Serving files in %s", serveFolder)
 		http.Handle("/", http.RedirectHandler("/browse/", http.StatusFound))
 	}
 	//
