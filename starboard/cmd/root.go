@@ -20,6 +20,7 @@ var cfgFile string
 var version = "<unknown>"
 var date = "date unknown"
 var commit = ""
+var target = ""
 
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
@@ -51,7 +52,7 @@ func init() {
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.starboard.yaml)")
 
-	rootCmd.Version = version + " (" + date + ") " + commit
+	rootCmd.Version = version + " " + target + " (" + date + ") " + commit
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.

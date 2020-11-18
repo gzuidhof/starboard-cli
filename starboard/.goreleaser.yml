@@ -14,4 +14,4 @@ builds:
     # Custom ldflags templates.
     # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
     ldflags:
-     - -s -w -X github.com/gzuidhof/starboard-cli/starboard/cmd.version={{.Version}} -X github.com/gzuidhof/starboard-cli/starboard/cmd.commit={{.Commit}} -X github.com/gzuidhof/starboard-cli/starboard/cmd.date={{.Date}}
+     - -s -w -X github.com/gzuidhof/starboard-cli/starboard/cmd.version={{.Version}} -X github.com/gzuidhof/starboard-cli/starboard/cmd.commit={{.Commit}} -X github.com/gzuidhof/starboard-cli/starboard/cmd.date={{.CommitDate}} -X github.com/gzuidhof/starboard-cli/starboard/cmd.target={{.Env.GOOS}}
