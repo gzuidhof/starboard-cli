@@ -4,7 +4,7 @@ starboard-cli
 The `starboard` command line tool is used for interacting with [Starboard Notebooks](https://github.com/gzuidhof/starboard-notebook) locally. It starts a local webserver so you can view and edit notebook files on your computer.
 
 ## Installation
-Pre-built binaries can be found on the Github releases page.
+Pre-built binaries can be found on the [**Github releases page**](https://github.com/gzuidhof/starboard-cli/releases/).
 
 ## Usage
 ```bash
