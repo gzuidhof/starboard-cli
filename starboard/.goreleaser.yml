@@ -1,0 +1,17 @@
+before:
+  hooks:
+    # you may remove this if you don't need go generate
+    - go generate
+builds:
+  - binary: starboard
+    goos:
+      - windows
+      - darwin
+      - linux
+    goarch:
+      - amd64
+      - arm64
+    # Custom ldflags templates.
+    # Default is `-s -w -X main.version={{.Version}} -X main.commit={{.Commit}} -X main.date={{.Date}} -X main.builtBy=goreleaser`.
+    ldflags:
+     - -s -w -X github.com/gzuidhof/starboard-cli/starboard/cmd.version={{.Version}} -X github.com/gzuidhof/starboard-cli/starboard/cmd.commit={{.Commit}} -X github.com/gzuidhof/starboard-cli/starboard/cmd.date={{.Date}}

@@ -16,6 +16,11 @@ import (
 
 var cfgFile string
 
+// Version (injected by goreleaser)
+var version = "<unknown>"
+var date = "date unknown"
+var commit = ""
+
 // rootCmd represents the base command when called without any subcommands
 var rootCmd = &cobra.Command{
 	Use:   "starboard",
@@ -45,6 +50,8 @@ func init() {
 	// will be global for your application.
 
 	rootCmd.PersistentFlags().StringVar(&cfgFile, "config", "", "config file (default is $HOME/.starboard.yaml)")
+
+	rootCmd.Version = version + " (" + date + ") " + commit
 
 	// Cobra also supports local flags, which will only run
 	// when this action is called directly.
