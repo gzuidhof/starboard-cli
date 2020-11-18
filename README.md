@@ -6,6 +6,14 @@ The `starboard` command line tool is used for interacting with [Starboard Notebo
 ## Installation
 Pre-built binaries can be found on the [**Github releases page**](https://github.com/gzuidhof/starboard-cli/releases/).
 
+Alternatively, you can build it yourself by cloning this repository and running:
+
+```bash
+cd starboard
+go generate
+go install
+```
+
 ## Usage
 ```bash
 # Serve files in current folder
