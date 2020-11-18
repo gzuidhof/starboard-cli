@@ -33,4 +33,5 @@ jobs:
         go build -v .
 
     - name: Test
+      working-directory: starboard
       run: go test -v .
