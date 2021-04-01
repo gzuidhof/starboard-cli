@@ -38,7 +38,7 @@ func init() {
 	// Cobra supports local flags which will only run when this command
 	// is called directly, e.g.:
 	serveCmd.Flags().StringP("port", "p", "8585", "Port to serve files on")
-	serveCmd.Flags().String("port_secondary", "15742", "Port used as secondary origin (for additional sandboxing)")
+	serveCmd.Flags().String("port_secondary", "9959", "Port used as secondary origin (for additional sandboxing)")
 
 	serveCmd.Flags().String("static_folder", "", "Override where static assets are served from, it uses the embedded assets if not set")
 	serveCmd.Flags().String("templates_folder", "", "Override where templates are loaded from, it uses the embedded assets if not set")

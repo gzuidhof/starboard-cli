@@ -4,9 +4,8 @@
 
 package main
 
-//go:generate go run web/assets_generate.go
-//go:generate go run scripts/download_runtime/main.go starboard-notebook 0.7.1 web/static/vendor/
-//go:generate go run scripts/download_runtime/main.go iframe-resizer 4.2.11 web/static/vendor/
+//go:generate go run scripts/download_runtime/main.go starboard-notebook 0.8.2 web/static/vendor/
+//go:generate go run scripts/download_runtime/main.go starboard-wrap 0.2.3 web/static/vendor/
 
 import (
 	"github.com/gzuidhof/starboard-cli/starboard/cmd"

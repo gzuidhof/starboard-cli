@@ -1,11 +1,6 @@
 # starboard (cli)
 
-To download a new runtime, specify its version and the target folder in the `go:generate` in main.go:
-
-```bash
-go run scripts/download_runtime/main.go starboard-notebook 0.7.1 web/static/vendor/
-```
-
+To download a new runtime, specify its version and the target folder in the `go:generate` in main.go.
 
 ## Development
 To run the serve command with the latest static assets and templates without having to `go generate`, use:
@@ -14,6 +9,7 @@ To run the serve command with the latest static assets and templates without hav
 go run main.go serve --static_folder web/static --templates_folder web/templates
 ```
 
+Consider it live-reload as long as you are only changing template files :).
 
 ## Releases
 

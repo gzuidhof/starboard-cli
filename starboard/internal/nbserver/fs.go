@@ -8,8 +8,8 @@ import (
 	"net/http"
 	"strings"
 
-	"github.com/gzuidhof/starboard-cli/starboard/assets/web_static"
-	"github.com/gzuidhof/starboard-cli/starboard/assets/web_templates"
+	"github.com/gzuidhof/starboard-cli/starboard/web/static"
+	"github.com/gzuidhof/starboard-cli/starboard/web/templates"
 	"github.com/spf13/viper"
 )
 
@@ -21,24 +21,24 @@ type serveFS struct {
 }
 
 func getFileSystems() serveFS {
-	var static http.FileSystem
-	var templates http.FileSystem
+	var staticFS http.FileSystem
+	var templatesFS http.FileSystem
 
 	if viper.GetString("static_folder") != "" {
-		static = http.Dir(viper.GetString("static_folder"))
+		staticFS = http.Dir(viper.GetString("static_folder"))
 	} else {
-		static = web_static.StaticAssets
+		staticFS = http.FS(static.FS)
 	}
 
 	if viper.GetString("templates_folder") != "" {
-		templates = http.Dir(viper.GetString("templates_folder"))
+		templatesFS = http.Dir(viper.GetString("templates_folder"))
 	} else {
-		templates = web_templates.TemplateAssets
+		templatesFS = http.FS(templates.FS)
 	}
 
 	return serveFS{
-		static:    static,
-		templates: templates,
+		static:    staticFS,
+		templates: templatesFS,
 	}
 }
 

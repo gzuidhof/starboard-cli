@@ -13,14 +13,7 @@
             </div>
         </r-cell>
     </r-grid>
-    <iframe
-        title="Starboard Notebook Sandbox iFrame"
-        id="notebook-iframe"
-        class="full-page-width"
-        src="{{.iframeHost}}/static/vendor/starboard-notebook@0.7.1/dist/index.html"
-        sandbox="allow-scripts allow-modals allow-same-origin allow-pointer-lock allow-top-navigation-by-user-activation allow-forms allow-downloads"
-        frameborder="0"
-    ></iframe>
+    <div id="notebook-mount"></div>
     <hr style="margin-bottom: 0;">
     <details>
         <summary><span style="font-weight: 700; font-size: 0.8em; color: #333" >Current notebook content</span></summary>
@@ -30,8 +23,8 @@
 
 {{template "footer"}}
 
-<script src="/static/vendor/iframe-resizer@4.2.11/js/iframeResizer.min.js"></script>
 <script type="module">
+    import {StarboardNotebookIFrame} from "/static/vendor/starboard-wrap@0.2.3/dist/index.js"
     const initialNotebookContent = {{.notebookContent}};
 
     let currentNotebookContent;
@@ -74,34 +67,19 @@
         updateDirtyIndicators(false);
     }
 
-    window.iFrameComponent = window.iFrameResize({ // Check the iframeResizer docs&code for the options here
-        autoResize: true, 
-        checkOrigin: [
-        "{{.iframeHost}}",
-        ],
-        onMessage: (messageData) => {
-            // This message is sent when the notebook is ready
-            // Respond to this message with the initial content of the notebook.
-            //
-            // The iFrame will send this message multiple times until you set the content.
-            // Note that you don't have to reply synchronously: you can wait for the content to be loaded from say a remote server
-            if (messageData.message.type === "SIGNAL_READY") {
-                window.iFrameComponent[0].iFrameResizer.sendMessage({
-                    type: "SET_NOTEBOOK_CONTENT", data: initialNotebookContent
-                })
-
-            // Whenever the notebook content gets changed (e.g. a character is typed)
-            // the entire content is sent to the parent website.
-            } else if (messageData.message.type === "NOTEBOOK_CONTENT_UPDATE") {
-                updateContent(messageData.message.data);
-
-            // This signal is sent when a save shortcut (e.g. cmd+s on mac) is pressed.
-            } else if (messageData.message.type === "SAVE") {
-                updateContent(messageData.message.data);
-                save(messageData.message.data); // Implement your own save function..
-            }
+    const mount = document.querySelector("#notebook-mount");
+    const el = new StarboardNotebookIFrame({
+        notebookContent: currentNotebookContent,
+        src: "{{.iframeHost}}/static/vendor/starboard-notebook@0.8.2/dist/index.html",
+        onSaveMessage(payload) {
+            updateContent(payload.content);
+            save(payload.content); // Implement your own save function..
         },
-        onReady: () => {},
-        inPageLinks: true,
-    }, document.querySelector("#notebook-iframe"));
+        onContentUpdateMessage(payload) {
+            updateContent(payload.content);
+        },
+
+    });
+    el.style.width = "100%";
+    mount.appendChild(el);
 </script>
