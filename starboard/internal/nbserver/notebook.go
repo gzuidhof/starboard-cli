@@ -26,7 +26,7 @@ type notebookHandler struct {
 }
 
 func (h *notebookHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
-	loadTemplates(fs.templates) // TODO: Only do this in dev mode
+	// loadTemplates(fs.templates) // TODO: Only do this in dev mode
 	if r.Method == http.MethodGet {
 		upath := strings.TrimPrefix(r.URL.Path, defaultNotebookEndpoint)
 		r.URL.Path = upath

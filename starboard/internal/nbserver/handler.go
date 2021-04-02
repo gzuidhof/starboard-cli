@@ -10,18 +10,23 @@ import (
 	"net/http"
 	"path/filepath"
 
+	"github.com/gzuidhof/starboard-cli/starboard/internal/fs/stripprefix"
 	"github.com/shurcooL/httpfs/html/vfstemplate"
-	"github.com/shurcooL/httpgzip"
 	"github.com/spf13/afero"
 	"github.com/spf13/viper"
+
+	"github.com/gofiber/adaptor/v2"
+	"github.com/gofiber/fiber/v2"
+	"github.com/gofiber/fiber/v2/middleware/filesystem"
+	"github.com/gofiber/fiber/v2/middleware/logger"
+	"github.com/gofiber/fiber/v2/middleware/recover"
 )
 
 var indexTemplate *template.Template
 var browseTemplate *template.Template
 var editorTemplate *template.Template
-var fs serveFS
 
-func loadTemplates(fs http.FileSystem) {
+func loadTemplates(fs *afero.HttpFs) {
 
 	t, err := vfstemplate.ParseGlob(fs, nil, "*.tmpl")
 	if err != nil {
@@ -32,58 +37,61 @@ func loadTemplates(fs http.FileSystem) {
 	editorTemplate = t.Lookup("editor.html.tmpl")
 }
 
-func Start(servePath string) {
-	port := viper.GetString("port")
-	portSecondary := viper.GetString("port_secondary")
-	serveFolder := servePath
+func CreateServer(serveFolderAbs string, serveFS serveFS, portPrimary string, portSecondary string) {
+	app := fiber.New(fiber.Config{CaseSensitive: true, DisableStartupMessage: true})
 
-	serveFolderAbs, err := filepath.Abs(serveFolder)
+	app.Use(recover.New())
+	app.Use(logger.New())
 
-	if err != nil {
-		log.Fatalf("Invalid serve folder, could not get absolute path: %v", err)
-	}
-
-	fs = getFileSystems()
-	loadTemplates(fs.templates)
-
-	fileServer := httpgzip.FileServer(fs.static, httpgzip.FileServerOptions{})
-	browseHandler := &browseHandler{
-		root: http.Dir(serveFolderAbs),
-	}
+	app.Use("/static/*", filesystem.New(filesystem.Config{
+		Root: afero.NewHttpFs(stripprefix.New("/static/", serveFS.static)),
+	}))
 
 	writeFileSystem := afero.NewBasePathFs(afero.NewOsFs(), serveFolderAbs).(*afero.BasePathFs)
-	nbHandler := &notebookHandler{
+	app.Get(defaultBrowseEndpoint+"*", adaptor.HTTPHandler(&browseHandler{
+		root: http.Dir(serveFolderAbs),
+	}))
+
+	app.All(defaultNotebookEndpoint+"*", adaptor.HTTPHandler(&notebookHandler{
 		root:        http.Dir(serveFolderAbs),
 		iframeHost:  "http://localhost:" + portSecondary,
 		writeFS:     writeFileSystem,
 		serveFolder: serveFolderAbs,
-	}
+	}))
 
-	http.Handle("/static/", http.StripPrefix("/static/", fileServer))
+	app.Get("/", func(c *fiber.Ctx) error {
+		if isProbablyNotebookFilename(serveFolderAbs) {
+			c.Redirect("/nb/")
+		} else {
+			c.Redirect("/browse/")
+		}
 
-	// /browse/
-	http.Handle(defaultBrowseEndpoint, browseHandler)
-
-	// /nb/
-	http.Handle(defaultNotebookEndpoint, nbHandler) // Works for both / and /browse/
-
-	if isProbablyNotebookFilename(serveFolder) {
-		log.Printf("Serving notebook file %s", serveFolder)
-		http.Handle("/", http.RedirectHandler("/nb/", http.StatusFound))
-	} else {
-		log.Printf("Serving files in %s", serveFolder)
-		http.Handle("/", http.RedirectHandler("/browse/", http.StatusFound))
-	}
-	//
+		return nil
+	})
 
 	done := make(chan bool)
 	go func() {
-		log.Fatal(http.ListenAndServe(":"+port, nil))
+		log.Fatal(app.Listen(":" + portPrimary))
 	}()
 	go func() {
-		log.Fatal(http.ListenAndServe(":"+portSecondary, nil))
+		log.Fatal(app.Listen(":" + portSecondary))
 	}()
-	log.Printf("Listening on port %v (and %s for sandboxing)", port, portSecondary)
+	log.Printf("Listening on :%v (and :%s for sandboxing)\nhttp://localhost:%v", portPrimary, portSecondary, portPrimary)
 
 	<-done
+}
+
+func Start(servePath string) {
+	port := viper.GetString("port")
+	portSecondary := viper.GetString("port_secondary")
+	serveFolder := servePath
+	serveFolderAbs, err := filepath.Abs(serveFolder)
+	if err != nil {
+		log.Fatalf("Invalid serve folder, could not get absolute path: %v", err)
+	}
+
+	serveFS := getFileSystems()
+	loadTemplates(afero.NewHttpFs(serveFS.templates))
+
+	CreateServer(serveFolderAbs, serveFS, port, portSecondary)
 }

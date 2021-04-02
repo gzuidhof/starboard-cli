@@ -1,5 +1,5 @@
 # %% [markdown]
-# Procedural art using P5.js from Javascript and Python
+# Procedural art using P5.js from Javascript and Python.
 
 This notebook shows how you can use [p5.js](https://p5js.org/) (a library for generative art) in a notebook environment. After that we'll call p5.js from Python - note that everything here runs in the browser!
 

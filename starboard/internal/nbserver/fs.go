@@ -5,35 +5,35 @@
 package nbserver
 
 import (
-	"net/http"
 	"strings"
 
 	"github.com/gzuidhof/starboard-cli/starboard/web/static"
 	"github.com/gzuidhof/starboard-cli/starboard/web/templates"
+	"github.com/spf13/afero"
 	"github.com/spf13/viper"
 )
 
 const dev = true
 
 type serveFS struct {
-	static    http.FileSystem
-	templates http.FileSystem
+	static    afero.Fs
+	templates afero.Fs
 }
 
 func getFileSystems() serveFS {
-	var staticFS http.FileSystem
-	var templatesFS http.FileSystem
+	var staticFS afero.Fs
+	var templatesFS afero.Fs
 
 	if viper.GetString("static_folder") != "" {
-		staticFS = http.Dir(viper.GetString("static_folder"))
+		staticFS = afero.NewReadOnlyFs(afero.NewBasePathFs(afero.NewOsFs(), viper.GetString("static_folder")))
 	} else {
-		staticFS = http.FS(static.FS)
+		staticFS = afero.FromIOFS{static.FS}
 	}
 
 	if viper.GetString("templates_folder") != "" {
-		templatesFS = http.Dir(viper.GetString("templates_folder"))
+		templatesFS = afero.NewReadOnlyFs(afero.NewBasePathFs(afero.NewOsFs(), viper.GetString("templates_folder")))
 	} else {
-		templatesFS = http.FS(templates.FS)
+		templatesFS = afero.FromIOFS{templates.FS}
 	}
 
 	return serveFS{
