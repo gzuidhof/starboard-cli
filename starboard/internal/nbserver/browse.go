@@ -43,8 +43,6 @@ func (f *browseHandler) ServeHTTP(w http.ResponseWriter, r *http.Request) {
 	// loadTemplates(fs.templates) // TODO: Only do this in dev mode
 	upath := strings.TrimPrefix(r.URL.Path, defaultBrowseEndpoint)
 
-	log.Print(r)
-
 	if !strings.HasPrefix(upath, "/") {
 		upath = "/" + upath
 		r.URL.Path = upath
