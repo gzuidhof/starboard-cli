@@ -45,11 +45,18 @@
         if (dirty && !document.title.startsWith("* ")) {
             document.title = "* " + document.title;
             dirtyIndicator.innerText = " Unsaved changes";
+            window.addEventListener("beforeunload", saveWarning); 
         } else if (!dirty && document.title.startsWith("* ")) {
             document.title = document.title.substr(2);
             dirtyIndicator.innerText = "";
+            window.removeEventListener("beforeunload", saveWarning);
         }
     }  
+
+    function saveWarning(e) {
+        e.preventDefault();
+        e.returnValue = '';
+    }
 
     async function save(content) {
         const r = await fetch(window.location.pathname, {
